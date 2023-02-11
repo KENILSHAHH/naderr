@@ -42,7 +42,7 @@ export default function CreateItem() {
         progress: (prog) => console.log(`received: ${prog}`),
       });
       const url2 = await client.pin.add(added.path);
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
+      const url = `https://ipfs.io/ipfs/${url2.string}`;
       console.log(url);
       setFileUrl(url);
     } catch (error) {
@@ -56,11 +56,12 @@ export default function CreateItem() {
     const data = JSON.stringify({
       name,
       description,
-      image: fileUrl,
+      image: fileUrl.string,
     });
     try {
       const added = await client.add(data);
-      const url = `https://ipfs.infura.io/ipfs/${added.path}`;
+      const url2 = await client.pin.add(added.path);
+      const url = `https://ipfs.io/ipfs/${url2.string}`;
       /* after file is uploaded to IPFS, return the URL to use it in the transaction */
       return url;
     } catch (error) {
@@ -68,7 +69,7 @@ export default function CreateItem() {
     }
   }
 
-  async function listNFTForSale(url) {
+  async function listNFTForSale(fileUrl) {
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -83,10 +84,13 @@ export default function CreateItem() {
     );
     let listingPrice = await contract.getListingPrice();
     listingPrice = listingPrice.toString();
-    let transaction = await contract.createToken(url, price, {
+    console.log(price);
+    console.log(listingPrice);
+    let transaction = await contract.createToken(fileUrl, price, {
       value: listingPrice,
     });
-    await transaction.wait();
+    console.log(transaction);
+    await transaction.wait(1);
 
     router.push('/');
   }
